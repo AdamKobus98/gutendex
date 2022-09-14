@@ -1,0 +1,74 @@
+version: '3.7'
+services:
+  backend:
+    image: django
+    container_name: backend
+    networks:
+      - test
+    ports:
+      - 8000:8000
+    depends_on:
+      - gutendex   
+    environment:
+      SECRET_KEY: pass
+      DATABASE_NAME: gutendex
+      DATABASE_USER: gutendex
+      DATABASE_PASSWORD: pass
+      DATABASE_HOST: gutendex
+      DATABASE_PORT: 5432
+      ADMIN_EMAILS: adamkobus11@gmail.com
+      ADMIN_NAMES: Adam
+      ALLOWED_HOSTS: 127.0.0.1,gutendex
+      DEBUG: "false"
+      EMAIL_HOST: your.smtp.host.here
+      EMAIL_HOST_ADDRESS: gutendex@your.domain.here
+      EMAIL_HOST_PASSWORD: your-smtp-host-password
+      EMAIL_HOST_USER: your-smtp-host-user-name
+      MANAGER_EMAILS: someone@their.domain.here
+      MANAGER_NAMES: Someone
+      MEDIA_ROOT: /var/www/gutendex/media/
+      STATIC_ROOT: /var/www/gutendex/static-root/
+
+    # volumes:
+    #   - staticvolume:/app/static/
+  gutendex:
+    image: postgres:14.5
+    container_name: gutendex
+    networks:
+      - test
+    ports:
+      - 5432:5432
+    volumes:
+     - test:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: gutendex
+      POSTGRES_DB: gutendex
+
+
+  frontend:
+    image: nginx:latest
+    container_name: front
+    volumes:
+    # - staticvolume:/usr/share/nginx/html/static
+     - ./conf/nginx.conf:/etc/nginx/nginx.conf
+     #- ./gutendex/templates/home.html:/usr/share/nginx/html/index.html
+    ports:
+     - 80:80
+    environment:
+     - NGINX_PORT=80
+    networks:
+     - test
+    depends_on:
+     - backend
+
+     
+networks:
+  test:
+    name: test
+
+volumes:
+  test:
+    name: test
+  # staticvolume:
+  #   name: staticvolume
